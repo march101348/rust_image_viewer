@@ -1,5 +1,6 @@
-extern crate iced;
+use image_viewer::view::frame::Frame;
+use iced::{Settings, Application};
 
 fn main() {
-    println!("Hello, world!");
+    Frame::run(Settings::default())
 }
