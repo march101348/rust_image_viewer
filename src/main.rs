@@ -1,6 +1,7 @@
-use image_viewer::view::frame::Frame;
 use iced::{Settings, Application};
 
-fn main() {
+use image_viewer::viewer::view::frame::Frame;
+
+fn main() -> iced::Result {
     Frame::run(Settings::default())
 }

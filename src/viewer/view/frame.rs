@@ -13,6 +13,7 @@ pub struct Frame {
     pub prev_button: button::State,
     pub next_button: button::State,
     pub image_files: scrollable::State,
+    pub file_name_buttons: Vec<button::State>,
 }
 
 impl Frame {
@@ -20,6 +21,7 @@ impl Frame {
         let root = String::from(root);
         let pages = Pages::new(&root);
         let page = pages.first().unwrap().file_name();
+        let file_name_buttons = pages.iter().map(|_| {button::State::default()}).collect();
         Frame {
             root,
             pages,
@@ -27,6 +29,7 @@ impl Frame {
             prev_button: button::State::default(),
             next_button: button::State::default(),
             image_files: scrollable::State::default(),
+            file_name_buttons,
         }
     }
 
@@ -62,6 +65,10 @@ impl Frame {
             self.pages.first().unwrap().file_name()
         };
         self.page = f();
+    }
+
+    pub fn move_pressed_page(&mut self, page_num: usize) {
+        self.page = self.pages.get_at(page_num).unwrap().file_name();
     }
 }
 

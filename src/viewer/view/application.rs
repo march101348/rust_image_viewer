@@ -1,12 +1,14 @@
 extern crate iced;
 extern crate walkdir;
 
-use iced::{Element, Column, Button, Text, Length, Image, Row, Align, Application, Command, executor, Subscription, Scrollable, keyboard};
-use iced_native::{subscription, input};
+use iced::{Element, Column, Button, Text, Length, Image, Row, Align, Application, Command, executor, Subscription, Scrollable, keyboard, time};
+use iced_native::subscription;
+use iced_native::event::Event::Keyboard;
+use iced_native::keyboard::Event::KeyReleased;
 use std::path::Path;
 
 use super::frame::Frame;
-use super::super::controller::{message::Message, time};
+use super::super::controller::message::Message;
 
 impl Application for Frame {
     type Executor = executor::Default;
@@ -23,9 +25,10 @@ impl Application for Frame {
 
     fn update(&mut self, message: Self::Message) -> Command<Message> {
         match message {
-            Message::Changed(_) => { self.update_pages() }
+            Message::Changed => { self.update_pages() }
             Message::PrevPressed => { self.move_prev_page() }
             Message::NextPressed => { self.move_next_page() }
+            Message::FileNamePressed(page_num) => { self.move_pressed_page(page_num) }
             _ => {}
         }
         Command::none()
@@ -34,13 +37,13 @@ impl Application for Frame {
     fn subscription(&self) -> Subscription<Message> {
         Subscription::batch(
             vec![
-                time::every(std::time::Duration::from_millis(100)).map(Message::Changed),
+                time::every(std::time::Duration::from_millis(100)).map(|_| Message::Changed),
                 subscription::events().map(|event| {
                     match event {
-                        iced_native::Event::Keyboard(input::keyboard::Event::Input { state: _, key_code: keyboard::KeyCode::Left, modifiers: _ }) => {
+                        Keyboard(KeyReleased{ key_code: keyboard::KeyCode::Left, modifiers: _ }) => {
                             Message::PrevPressed
                         },
-                        iced_native::Event::Keyboard(input::keyboard::Event::Input { state: _, key_code: keyboard::KeyCode::Right, modifiers: _ })  => {
+                        Keyboard(KeyReleased{ key_code: keyboard::KeyCode::Right, modifiers: _ })  => {
                             Message::NextPressed
                         },
                         _ => Message::None,
@@ -67,9 +70,12 @@ impl Application for Frame {
                 .width(Length::Fill)
                 .height(Length::Fill);
         let image_pane =
-            self.pages.iter().fold(image_pane, |image_pane, page| {
-                image_pane.push(Text::new(page.path().file_stem().unwrap().to_str().unwrap()))
-            });
+            self.pages.iter().enumerate().zip(self.file_name_buttons.iter_mut()).fold(image_pane, 
+                |image_pane, ((page_num, page), button)| {
+                    image_pane.push(
+                        Button::new(button, Text::new(page.path().file_stem().unwrap().to_str().unwrap()))
+                            .on_press(Message::FileNamePressed(page_num))
+                            .width(Length::Fill))});
         let right_pane =
             Row::new()
                 .width(Length::FillPortion(1))

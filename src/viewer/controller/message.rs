@@ -1,7 +1,8 @@
 #[derive(Copy, Clone, Debug)]
 pub enum Message {
     None,
-    Changed(bool),
+    Changed,
     PrevPressed,
     NextPressed,
+    FileNamePressed(usize),
 }
