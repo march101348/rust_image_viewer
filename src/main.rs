@@ -1,6 +1,8 @@
-use iced::{Settings, Application};
+mod viewer;
 
-use image_viewer::viewer::view::frame::Frame;
+use iced::{Application, Settings};
+
+use crate::viewer::view::frame::Frame;
 
 fn main() -> iced::Result {
     Frame::run(Settings::default())
